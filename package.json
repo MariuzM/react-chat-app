@@ -1,0 +1,35 @@
+{
+	"version": "1.0.0",
+	"main": "index.jsx",
+	"scripts": {
+		"start": "NODE_ENV=development parcel src/index.html --open",
+		"build": "NODE_ENV=production parcel build src/index.html --out-dir build --public-url ./"
+	},
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@babel/core": "^7.8.7",
+		"@babel/plugin-proposal-class-properties": "^7.8.3",
+		"@babel/plugin-transform-runtime": "^7.8.3",
+		"@babel/preset-env": "^7.8.7",
+		"@babel/preset-react": "^7.8.3",
+		"babel-eslint": "^10.1.0",
+		"eslint": "^6.8.0",
+		"eslint-config-airbnb": "^18.0.1",
+		"eslint-config-prettier": "^6.10.0",
+		"eslint-plugin-import": "^2.20.1",
+		"eslint-plugin-jsx-a11y": "^6.2.3",
+		"eslint-plugin-prettier": "^3.1.2",
+		"eslint-plugin-react": "^7.19.0",
+		"eslint-plugin-react-hooks": "^2.5.0",
+		"parcel-bundler": "^1.12.4"
+	},
+	"dependencies": {
+		"prettier": "^1.19.1",
+		"prop-types": "^15.7.2",
+		"pubnub": "^4.27.3",
+		"pubnub-react": "^2.0.0",
+		"react": "^16.13.0",
+		"react-dom": "^16.13.0"
+	}
+}
