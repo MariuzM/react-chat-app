@@ -35,10 +35,13 @@ const styles = {
   },
 }
 
+const items = ['marius', 'andrius', 'mikas']
+const item = items[Math.floor(Math.random() * items.length)]
+
 const pubnub = new PubNub({
   publishKey: 'pub-c-f1bd610a-427d-41e0-b0c3-c841ac7479e0',
   subscribeKey: 'sub-c-2c3d4134-63d1-11ea-9a99-f2f107c29c38',
-  uuid: 'username',
+  uuid: item,
   ssl: true,
 })
 
@@ -52,63 +55,67 @@ export default function App() {
     async message => {
       await pubnub.publish({
         channel: channels,
-        message,
+        message: {
+          message,
+          uuid: item,
+        },
       })
       setInput('')
     },
-    [pubnub, setInput],
+    [pubnub],
   )
 
   useEffect(() => {
     pubnub.history(
       { channel: channels, count: 2, stringifiedTimeToken: true },
-      (status, response) => {
+      (s, r) => {
         const temp = []
-        for (let i = 0; i < response.messages.length; i += 1) {
-          temp.push(response.messages[i].entry)
+        for (let i = 0; i < r.messages.length; i += 1) {
+          temp.push(r.messages[i].entry)
         }
         addMessage(() => temp)
       },
     )
 
-    // pubnub.publish(
-    //   {
-    //     message: { such: 'object' },
-    //     channel: { channels },
-    //     // sendByPost: false, // true to send via post
-    //     // storeInHistory: false, // override default storage options
-    //     // meta: { cool: 'meta' }, // publish extra meta with the request
-    //   },
-    //   (status, response) => {
-    //     if (status.error) console.log(status)
-    //     else console.log('message Published w/ timetoken', response.timetoken)
-    //   },
-    // )
+    pubnub.hereNow(
+      {
+        channels,
+        includeUUIDs: true,
+        includeState: true,
+      },
+      (s, r) => {
+        // console.log(s)
+        // console.log(r.channels.myTestChannel.occupants)
+        // console.log(r.channels.myTestChannel.occupants[0].uuid)
+      },
+    )
+
+    pubnub.subscribe({ channels, withPresence: true })
   }, [])
 
   return (
     <PubNubProvider client={pubnub}>
       <PubNubConsumer>
         {client => {
+          console.log(client)
+          console.log('does this run')
           client.addListener({
-            message: messageEvent => {
-              addMessage([...messages, messageEvent.message])
+            message: msg => {
+              addMessage([...messages, msg.message])
             },
           })
-
-          client.subscribe({ channels })
         }}
       </PubNubConsumer>
 
       <div style={styles.container}>
         <div style={styles.chat}>
-          {messages.map((message, messageIndex) => {
+          {messages.map((m, mI) => {
             return (
               <div
-                key={[messageIndex]}
+                key={[mI]}
                 className={`speech-bubble speech-bubble-right ${true ? 'left' : 'right'}`}
               >
-                {message}
+                {m.message}
               </div>
             )
           })}
@@ -118,9 +125,7 @@ export default function App() {
       <div className="input-button">
         <TextField
           className="msg-button"
-          id="filled-basic"
           label="Type your message"
-          variant="filled"
           value={input}
           onChange={e => setInput(e.target.value)}
         />
@@ -130,8 +135,8 @@ export default function App() {
           color="primary"
           variant="contained"
           onClick={e => {
-            e.preventDefault()
             sendMessage(input)
+            e.preventDefault()
           }}
         >
           Send Message
