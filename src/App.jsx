@@ -73,8 +73,6 @@ export default function App() {
 
   return (
     <PubNubProvider client={pubnub}>
-      {/* <CustomPrompt /> */}
-
       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogContent>
           <TextField
@@ -132,7 +130,10 @@ export default function App() {
           type="button"
           color="primary"
           variant="contained"
-          onClick={sendMessage(input)}
+          onClick={e => {
+            e.preventDefault()
+            sendMessage(input)
+          }}
         >
           Send Message
         </Button>
