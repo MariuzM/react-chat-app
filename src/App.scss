@@ -1,3 +1,6 @@
+$blue: #0b93f6;
+$gray: #e5e5ea;
+
 body {
   font-family: sans-serif;
   display: flex;
@@ -46,7 +49,7 @@ body {
 .speech-bubble-right {
   float: right;
   color: white;
-  background: #0b93f6;
+  background: $blue;
   &:before {
     content: '';
     position: absolute;
@@ -54,7 +57,7 @@ body {
     bottom: -2px;
     right: -7px;
     height: 20px;
-    border-right: 20px solid #0b93f6;
+    border-right: 20px solid $blue;
     border-bottom-left-radius: 16px 14px;
     transform: translate(0, -2px);
   }
@@ -74,7 +77,7 @@ body {
 
 .speech-bubble-left {
   float: left;
-  background: #e5e5ea;
+  background: $gray;
   color: black;
   &:before {
     content: '';
@@ -83,7 +86,7 @@ body {
     bottom: -2px;
     left: -7px;
     height: 20px;
-    border-left: 20px solid #e5e5ea;
+    border-left: 20px solid $gray;
     border-bottom-right-radius: 16px 14px;
     transform: translate(0, -2px);
   }

@@ -6,7 +6,7 @@ import TextField from '@material-ui/core/TextField'
 
 import './App.scss'
 
-const items = ['marius', 'andrius', 'mikas']
+const items = ['Name1', 'Name2', 'Name3']
 const item = items[Math.floor(Math.random() * items.length)]
 
 const pubnub = new PubNub({
@@ -23,14 +23,16 @@ export default function App() {
   const [input, setInput] = useState('')
 
   const sendMessage = msg => {
-    pubnub.publish({
-      channel: channels[0],
-      message: {
-        message: msg,
-        uuid: item,
-      },
-    })
-    setInput('')
+    if (msg) {
+      pubnub.publish({
+        channel: channels[0],
+        message: {
+          message: msg,
+          uuid: item,
+        },
+      })
+      setInput('')
+    }
   }
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function App() {
 
     pubnub.addListener({
       message: msg => {
-        console.log('event', msg)
+        // console.log('event', msg)
         setMessages(prevState => [
           ...prevState,
           { message: msg.message.message, uuid: msg.message.uuid },
@@ -61,15 +63,17 @@ export default function App() {
   return (
     <PubNubProvider client={pubnub}>
       <div className="container">
-        {console.log('Test Run 3')}
+        {/* {console.log('Test Run 3')} */}
         <div className="chat">
           {messages.map((m, mI) => {
             return (
-              <div
-                key={[mI]}
-                className={`speech-bubble speech-bubble-${false ? 'left' : 'right'}`}
-              >
-                {m.message}
+              <div key={[mI]}>
+                <div>{`ID ${m.uuid}`}</div>
+                <div
+                  className={`speech-bubble speech-bubble-${false ? 'left' : 'right'}`}
+                >
+                  {m.message}
+                </div>
               </div>
             )
           })}
