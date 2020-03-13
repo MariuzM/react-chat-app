@@ -3,22 +3,24 @@ import PubNub from 'pubnub'
 import { PubNubProvider } from 'pubnub-react'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
 
 import './App.scss'
-
-const items = ['Name1', 'Name2', 'Name3']
-const item = items[Math.floor(Math.random() * items.length)]
 
 const pubnub = new PubNub({
   publishKey: 'pub-c-f1bd610a-427d-41e0-b0c3-c841ac7479e0',
   subscribeKey: 'sub-c-2c3d4134-63d1-11ea-9a99-f2f107c29c38',
-  uuid: item,
+  // uuid: item,
   ssl: true,
 })
 
 const channels = ['myTestChannel']
 
 export default function App() {
+  const [open, setOpen] = useState(true)
+  const [uuid, setUuid] = useState([])
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
 
@@ -28,7 +30,7 @@ export default function App() {
         channel: channels[0],
         message: {
           message: msg,
-          uuid: item,
+          uuid,
         },
       })
       setInput('')
@@ -60,19 +62,57 @@ export default function App() {
     })
   }, [])
 
+  const handleSubmit = () => {
+    setOpen(false)
+  }
+
+  const handleClose = () => {
+    setUuid('')
+    setOpen(false)
+  }
+
   return (
     <PubNubProvider client={pubnub}>
+      {/* <CustomPrompt /> */}
+
+      <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Enter your name"
+            type="text"
+            onChange={e => setUuid(e.target.value)}
+            fullWidth
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+
+          <Button onClick={handleSubmit} color="primary">
+            Enter
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <div className="container">
         {/* {console.log('Test Run 3')} */}
         <div className="chat">
           {messages.map((m, mI) => {
+            // console.log(m.uuid)
             return (
               <div key={[mI]}>
-                <div>{`ID ${m.uuid}`}</div>
                 <div
-                  className={`speech-bubble speech-bubble-${false ? 'left' : 'right'}`}
+                  className={`speech-bubble speech-bubble-${
+                    uuid !== m.uuid ? 'left' : 'right'
+                  }`}
                 >
-                  {m.message}
+                  <div className="uuid">{m.uuid}</div>
+                  <div>{m.message}</div>
                 </div>
               </div>
             )
@@ -92,10 +132,7 @@ export default function App() {
           type="button"
           color="primary"
           variant="contained"
-          onClick={e => {
-            e.preventDefault()
-            sendMessage(input)
-          }}
+          onClick={sendMessage(input)}
         >
           Send Message
         </Button>
