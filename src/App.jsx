@@ -1,39 +1,10 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import PubNub from 'pubnub'
-import { PubNubProvider, PubNubConsumer } from 'pubnub-react'
+import { PubNubProvider } from 'pubnub-react'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 
 import './App.scss'
-
-const styles = {
-  container: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'row',
-    height: '80vh',
-  },
-  chat: {
-    display: 'flex',
-    flex: 3,
-    flexDirection: 'column',
-    borderWidth: '1px',
-    borderColor: '#ccc',
-    borderRightStyle: 'solid',
-    borderLeftStyle: 'solid',
-    border: '1.5px solid black',
-    borderRadius: '10px',
-    margin: '5px',
-    padding: '10px',
-  },
-  bubble: {
-    border: '0.5px solid black',
-    borderRadius: '10px',
-    margin: '5px',
-    padding: '10px',
-    display: 'flex',
-  },
-}
 
 const items = ['marius', 'andrius', 'mikas']
 const item = items[Math.floor(Math.random() * items.length)]
@@ -48,24 +19,23 @@ const pubnub = new PubNub({
 const channels = ['myTestChannel']
 
 export default function App() {
-  const [messages, addMessage] = useState([])
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
 
-  const sendMessage = useCallback(
-    async message => {
-      await pubnub.publish({
-        channel: channels,
-        message: {
-          message,
-          uuid: item,
-        },
-      })
-      setInput('')
-    },
-    [pubnub],
-  )
+  const sendMessage = msg => {
+    pubnub.publish({
+      channel: channels[0],
+      message: {
+        message: msg,
+        uuid: item,
+      },
+    })
+    setInput('')
+  }
 
   useEffect(() => {
+    pubnub.subscribe({ channels })
+
     pubnub.history(
       { channel: channels, count: 2, stringifiedTimeToken: true },
       (s, r) => {
@@ -73,47 +43,31 @@ export default function App() {
         for (let i = 0; i < r.messages.length; i += 1) {
           temp.push(r.messages[i].entry)
         }
-        addMessage(() => temp)
+        setMessages(() => temp)
       },
     )
 
-    pubnub.hereNow(
-      {
-        channels,
-        includeUUIDs: true,
-        includeState: true,
+    pubnub.addListener({
+      message: msg => {
+        console.log('event', msg)
+        setMessages(prevState => [
+          ...prevState,
+          { message: msg.message.message, uuid: msg.message.uuid },
+        ])
       },
-      (s, r) => {
-        // console.log(s)
-        // console.log(r.channels.myTestChannel.occupants)
-        // console.log(r.channels.myTestChannel.occupants[0].uuid)
-      },
-    )
-
-    pubnub.subscribe({ channels, withPresence: true })
+    })
   }, [])
 
   return (
     <PubNubProvider client={pubnub}>
-      <PubNubConsumer>
-        {client => {
-          console.log(client)
-          console.log('does this run')
-          client.addListener({
-            message: msg => {
-              addMessage([...messages, msg.message])
-            },
-          })
-        }}
-      </PubNubConsumer>
-
-      <div style={styles.container}>
-        <div style={styles.chat}>
+      <div className="container">
+        {console.log('Test Run 3')}
+        <div className="chat">
           {messages.map((m, mI) => {
             return (
               <div
                 key={[mI]}
-                className={`speech-bubble speech-bubble-right ${true ? 'left' : 'right'}`}
+                className={`speech-bubble speech-bubble-${false ? 'left' : 'right'}`}
               >
                 {m.message}
               </div>
@@ -135,8 +89,8 @@ export default function App() {
           color="primary"
           variant="contained"
           onClick={e => {
-            sendMessage(input)
             e.preventDefault()
+            sendMessage(input)
           }}
         >
           Send Message

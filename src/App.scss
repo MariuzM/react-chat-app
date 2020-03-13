@@ -7,6 +7,35 @@ body {
   width: 100vw;
 }
 
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 80vh;
+}
+
+.chat {
+  display: flex;
+  flex: 3;
+  flex-direction: column;
+  border-width: 1px;
+  border-color: #ccc;
+  border-right-style: solid;
+  border-left-style: solid;
+  border: 1.5px solid black;
+  border-radius: 10px;
+  margin: 5px;
+  padding: 10px;
+}
+
+.bubble {
+  border: 0.5px solid black;
+  border-radius: 10px;
+  margin: 5px;
+  padding: 10px;
+  display: flex;
+}
+
 .speech-bubble {
   position: relative;
   border-radius: 50em;
