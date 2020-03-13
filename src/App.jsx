@@ -1,6 +1,39 @@
 import React, { useCallback, useState, useEffect } from 'react'
 import PubNub from 'pubnub'
 import { PubNubProvider, PubNubConsumer } from 'pubnub-react'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
+
+import './App.scss'
+
+const styles = {
+  container: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    height: '80vh',
+  },
+  chat: {
+    display: 'flex',
+    flex: 3,
+    flexDirection: 'column',
+    borderWidth: '1px',
+    borderColor: '#ccc',
+    borderRightStyle: 'solid',
+    borderLeftStyle: 'solid',
+    border: '1.5px solid black',
+    borderRadius: '10px',
+    margin: '5px',
+    padding: '10px',
+  },
+  bubble: {
+    border: '0.5px solid black',
+    borderRadius: '10px',
+    margin: '5px',
+    padding: '10px',
+    display: 'flex',
+  },
+}
 
 const pubnub = new PubNub({
   publishKey: 'pub-c-f1bd610a-427d-41e0-b0c3-c841ac7479e0',
@@ -18,7 +51,7 @@ export default function App() {
   const sendMessage = useCallback(
     async message => {
       await pubnub.publish({
-        channel: channels[0],
+        channel: channels,
         message,
       })
       setInput('')
@@ -28,24 +61,30 @@ export default function App() {
 
   useEffect(() => {
     pubnub.history(
-      { channel: { channels }, count: 2, stringifiedTimeToken: true },
-      (status, response) => console.log(...response.messages),
+      { channel: channels, count: 2, stringifiedTimeToken: true },
+      (status, response) => {
+        const temp = []
+        for (let i = 0; i < response.messages.length; i += 1) {
+          temp.push(response.messages[i].entry)
+        }
+        addMessage(() => temp)
+      },
     )
 
-    pubnub.publish(
-      {
-        message: { such: 'object' },
-        channel: { channels },
-        // sendByPost: false, // true to send via post
-        // storeInHistory: false, // override default storage options
-        // meta: { cool: 'meta' }, // publish extra meta with the request
-      },
-      (status, response) => {
-        if (status.error) console.log(status)
-        else console.log('message Published w/ timetoken', response.timetoken)
-      },
-    )
-  }, [messages])
+    // pubnub.publish(
+    //   {
+    //     message: { such: 'object' },
+    //     channel: { channels },
+    //     // sendByPost: false, // true to send via post
+    //     // storeInHistory: false, // override default storage options
+    //     // meta: { cool: 'meta' }, // publish extra meta with the request
+    //   },
+    //   (status, response) => {
+    //     if (status.error) console.log(status)
+    //     else console.log('message Published w/ timetoken', response.timetoken)
+    //   },
+    // )
+  }, [])
 
   return (
     <PubNubProvider client={pubnub}>
@@ -61,28 +100,43 @@ export default function App() {
         }}
       </PubNubConsumer>
 
-      <div style={{ backgroundColor: 'white', height: '260px', overflow: 'scroll' }}>
-        {messages.map((message, messageIndex) => {
-          return <div key={[messageIndex]}>{message}</div>
-        })}
+      <div style={styles.container}>
+        <div style={styles.chat}>
+          {messages.map((message, messageIndex) => {
+            return (
+              <div
+                key={[messageIndex]}
+                className={`speech-bubble speech-bubble-right ${true ? 'left' : 'right'}`}
+              >
+                {message}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      <input
-        type="text"
-        placeholder="Type your message"
-        value={input}
-        onChange={e => setInput(e.target.value)}
-      />
+      <div className="input-button">
+        <TextField
+          className="msg-button"
+          id="filled-basic"
+          label="Type your message"
+          variant="filled"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+        />
 
-      <button
-        type="button"
-        onClick={e => {
-          e.preventDefault()
-          sendMessage(input)
-        }}
-      >
-        Send Message
-      </button>
+        <Button
+          type="button"
+          color="primary"
+          variant="contained"
+          onClick={e => {
+            e.preventDefault()
+            sendMessage(input)
+          }}
+        >
+          Send Message
+        </Button>
+      </div>
     </PubNubProvider>
   )
 }
